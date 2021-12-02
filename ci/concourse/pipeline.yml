@@ -48,7 +48,7 @@ jobs:
       outputs:
       - name: image
       params:
-        CONTEXT: git/Dockerfile
+        CONTEXT: git/src
       run:
         path: build
   - put: image
