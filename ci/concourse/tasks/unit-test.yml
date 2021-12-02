@@ -24,6 +24,4 @@ run:
   args:
   - -c
   - |
-    cd git/src; python3 app_test.py; 
-    # Make this output available to the 'test' Job
-    cp -R git/* build
+    ls -l; ls-l git/;cd git/src; python3 app_test.py; 
