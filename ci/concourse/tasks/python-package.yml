@@ -1,0 +1,27 @@
+---
+# A task to build a Docker image for a Java app with Jib
+
+# Task definition
+
+platform: linux
+container_limits: {}
+
+# Use the 'cimg/python:3.8.1' image from Docker Hub
+image_resource:
+  type: registry-image
+  source:
+    repository: cimg/python:3.8.1
+
+# We will provide an input called 'git' to this Task
+# This causes Concourse to git checkout a specific commit.
+# It also allows us to execute this step independently, for a specific Git commit.
+# However, the parent pipeline only runs this task when the previous 'unit' job has passed.
+inputs:
+  - name: git
+
+run:
+  path: /bin/sh
+  args:
+  - -c
+  - |
+    cd git/src; docker build -t python-concourse .;

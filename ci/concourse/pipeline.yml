@@ -1,0 +1,53 @@
+---
+# Declare the resources that Concourse will continually check and use.
+resources:
+- name: git
+  icon: gitlab
+  type: git
+  source:
+    uri: https://github.com/ashok-mishraa/test-python-app.git
+    branch: main
+- name: image
+  type: registry-image
+  icon: docker
+  source:
+    repository: ashokkumar54/python-application-concourse
+    username: {{docker_user}}
+    password: {{docker_pass}}
+    tag: latest
+
+jobs:
+
+# This test job will fetch the source code from GitHub, and execute the test task.
+- name: unit
+  plan:
+  - get: git
+    version: latest # Just process the latest Git commit, not every commit (this is the default setting)
+    trigger: true # Trigger this job whenever Concourse detects a new Resource version (i.e. a new Git commit)
+  - task: run-unit-tests
+    file: git/ci/concourse/tasks/unit-test.yml
+
+# This build job will fetch the source code,
+# then execute a 'build' task which is defined separately in the repository.
+- name: build-and-push
+  plan:
+  - get: git # Concourse is stateless and needs to be given an external input to this Job.
+  - task: build-task-image
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+      - name: git
+      outputs:
+      - name: image
+      params:
+        CONTEXT: git/Dockerfile
+      run:
+        path: build
+  - put: simple-image
+    params:
+      image: image/image.tar
